@@ -12,6 +12,9 @@ namespace StatisticalFunctions
         {
             int[] nums = new int[rnd.Next(10, 1001)];
             FillArr(nums);
+            PrintArray(nums);
+
+            Console.WriteLine();
                 
             double mean = Math.Round(Mean(nums), 2);
             Console.WriteLine($"Mean:{mean}");
@@ -30,6 +33,17 @@ namespace StatisticalFunctions
 
             double kurt = Math.Round(Kurt(nums, mean, sd), 2);
             Console.WriteLine($"Kurtosis:{kurt}");
+        }
+
+        private static void PrintArray(int[] nums)
+        {
+            for (int i = 0; i < nums.Length; i++)
+            {
+                if (i == 0)
+                    Console.Write(nums[i]);
+                else
+                    Console.Write($", {nums[i]}");
+            }
         }
 
         private static double Kurt(int[] nums, double mean, double sd)
@@ -62,7 +76,7 @@ namespace StatisticalFunctions
 
         private static double Mean(int[] nums)
         {
-            return nums.Sum() / nums.Length; 
+            return (double) nums.Sum() / nums.Length; 
         }
 
         private static void FillArr(int[] nums)
