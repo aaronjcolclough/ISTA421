@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace CalculatePI
 {
@@ -30,8 +31,22 @@ namespace CalculatePI
 
             try
             {
-                // TO DO: Implement the geometric approximation of PI
-                return 0;
+                for (int points = 0; points < NUMPOINTS; points++)
+                {
+                    int xCoord = random.Next(RADIUS);
+                    int yCoord = random.Next(RADIUS);
+                    double distanceFromOrigin = Math.Sqrt(xCoord * xCoord + yCoord * yCoord);
+                    pointsList.Add(distanceFromOrigin); doAdditionalProcessing();
+                }
+                foreach (double datum in pointsList)
+                {
+                    if (datum <= RADIUS)
+                    {
+                        numPointsInCircle++;
+                    }
+                }
+                double pi = 4.0 * numPointsInCircle / NUMPOINTS;
+                return pi;
             }
             finally
             {
@@ -43,7 +58,7 @@ namespace CalculatePI
 
         private static double ParallelPI()
         {
-            List<double> pointsList = new List<double>(NUMPOINTS);
+            ConcurrentBag<double> pointsList = new ConcurrentBag<double>();
             Random random = new Random(SEED);
             int numPointsInCircle = 0;
             Stopwatch timer = new Stopwatch();
@@ -51,8 +66,30 @@ namespace CalculatePI
 
             try
             {
-                // TO DO: Implement the geometric approximation of PI
-                return 0;
+                Parallel.For(0, NUMPOINTS, (x) => 
+                {
+                    int xCoord;
+                    int yCoord;
+
+                    lock(pointsList)
+                    {
+                        xCoord = random.Next(RADIUS);
+                        yCoord = random.Next(RADIUS);
+                    }
+                    double distanceFromOrigin = Math.Sqrt(xCoord * xCoord + yCoord * yCoord);
+                    pointsList.Add(distanceFromOrigin);
+                    doAdditionalProcessing();
+                });
+                foreach (double datum in pointsList)
+                {
+                    if (datum <= RADIUS)
+                    {
+                        numPointsInCircle++;
+                    }
+                }
+
+                double pi = 4.0 * numPointsInCircle / NUMPOINTS;
+                return pi;
             }
             finally
             {
@@ -74,8 +111,8 @@ namespace CalculatePI
 
             Console.WriteLine();
 
-            //pi = ParallelPI();
-            //Console.WriteLine("Geometric approximation of PI calculated in parallel: {0}", pi);
+            pi = ParallelPI();
+            Console.WriteLine("Geometric approximation of PI calculated in parallel: {0}", pi);
         }
     }
 }
